@@ -1,0 +1,4 @@
+### state variables
+BUDGET = 100.000
+HEALTH_LEVEL = 70
+RISK_LEVEL = 40

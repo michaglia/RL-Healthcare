@@ -1,4 +1,4 @@
 ### state variables
-BUDGET = 100.000
-HEALTH_LEVEL = 70
-RISK_LEVEL = 40
+budget = 100.000
+health_level = 70
+risk_level = 40

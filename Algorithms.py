@@ -21,7 +21,7 @@ class HealthQLearnVFA:
         self.training_error = []
 
         if initial_w is None:
-            num_features = self.env.observation_space.shape[0]
+            num_features = len(self.env.observation_space.keys())
             i_w = np.ones((self.env.action_space.n, num_features))
         else:
             i_w = initial_w

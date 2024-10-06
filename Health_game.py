@@ -1,6 +1,6 @@
 from Health_Env import *
 
-env = Manage_healthcare(budget=150, healthcare_level=60, health_risk_level=40)
+env = Manage_healthcare()
 
 done = False
 state = env.reset()
@@ -10,11 +10,11 @@ while not done:
     action = input("Enter action (1/2/3): ")
     
     if action == '1':
-        action = 'invest_in_healthcare'
+        action = 1
     elif action == '2':
-        action = 'invest_in_prevention'
+        action = 2
     elif action == '3':
-        action = 'do_nothing'
+        action = 3
     else:
         print("Invalid action! Please choose 1, 2, or 3.")
         continue

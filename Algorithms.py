@@ -35,7 +35,7 @@ class HealthQLearnVFA:
         Returns:
             torch.tensor: state observed by the agent in terms of state features 
         """
-        features = np.array(list(state.values())) # current state of the environment into feature vector
+        features = np.array([float(value) for value in state.values()])  # Convert to float
         return torch.tensor(features, dtype=float, requires_grad=False)
     
     def q(self, state: int, action: int) -> float:

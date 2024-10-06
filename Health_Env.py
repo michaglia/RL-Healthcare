@@ -7,7 +7,7 @@ from gym.envs.registration import register
 
 
 class HealthcareEnv(gym.Env):
-    def __init__(self, initial_budget = 1000, initial_healthcare = 5, initial_risk = 5, max_years = 30):
+    def __init__(self, initial_budget = 2, initial_healthcare = 5, initial_risk = 5, max_years = 30):
         super(HealthcareEnv, self).__init__()
         """
         Initialize the environment with the initial values 
@@ -23,7 +23,7 @@ class HealthcareEnv(gym.Env):
         self.action_space = spaces.Discrete(3)
         # budget, healthcare level, health risk 
         self.observation_space = spaces.Dict({
-            "budget": spaces.Box(low=0, high=1000, shape=(1,), dtype=np.float32),
+            "budget": spaces.Box(low=0, high=1000, shape=(1,), dtype=np.float64),
             "health_level": spaces.Discrete(100),
             "risk_level": spaces.Discrete(100)
         })
@@ -32,9 +32,9 @@ class HealthcareEnv(gym.Env):
 
     def _get_obs(self):
         return {
-        "budget": self.initial_budget,
-        "health_level": self.initial_healthcare,
-        "risk_level": self.initial_risk
+        "budget": np.clip(np.array([self.initial_budget], dtype=np.float64), 0, 1000),  # Budget remains as float
+        "health_level": np.clip(np.int64(self.initial_healthcare), 0, 99),  # Ensure health_level is int64
+        "risk_level": np.clip(np.int64(self.initial_risk), 0, 99)  # Ensure risk_level is int64
     }
 
     @property
@@ -59,6 +59,24 @@ class HealthcareEnv(gym.Env):
         # Return actions based on the current state
         return available_actions
     
+    
+    def reward(self):
+        """
+        Calculates the reward based on the current state of the environment
+        """
+        pandemic_occurrence = False
+        
+        if self.initial_risk > self.initial_healthcare:
+            pandemic_pr = (self.initial_risk - self.initial_healthcare) / self.initial_risk
+            if random.random() < pandemic_pr:
+                pandemic_occurrence = True  # pandemic has occurred
+                penalty = -1000 * (self.initial_risk - self.initial_healthcare)
+                return penalty, True  # return penalty and indicate the episode is done
+            else:
+                return self.initial_budget, False  
+        else:
+            return self.initial_budget, False  
+    
     def step(self, action):
         # Then take actions
         if action == 0: # invest in healthcare
@@ -82,20 +100,7 @@ class HealthcareEnv(gym.Env):
         # increase health_risk randomly 
         self.initial_risk += random.randint(1,3)
 
-        pandemic_occurrence = False
-        if self.initial_risk > self.initial_healthcare:
-            pandemic_pr = (self.initial_risk - self.initial_healthcare) / self.initial_risk
-            if random.random() < pandemic_pr:
-                pandemic_occurrence = True # pandemic has occured
-                penalty = -1000 * (self.initial_risk - self.initial_healthcare) 
-                reward = penalty
-                self.done = True
-            else: 
-                reward = self.initial_budget
-                self.done = False
-        else: 
-            reward = self.initial_budget
-            self.done = False
+        reward, self.done = self.reward()
 
         self.current_year += 1
         if self.current_year >= self.max_years or self.initial_budget <= 0:
@@ -110,9 +115,9 @@ class HealthcareEnv(gym.Env):
     
     def reset(self, seed=None, options:  dict = {}):
         super().reset(seed=seed)
-        self.initial_budget = self.initial_budget
-        self.initial_healthcare = self.initial_healthcare
-        self.initial_risk = self.initial_risk
+        self.initial_budget = 2
+        self.initial_healthcare = 5
+        self.initial_risk = 5
         self.current_year = 0
         self.do_nothing_count = 0
         info = {}

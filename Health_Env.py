@@ -7,7 +7,7 @@ from gym.envs.registration import register
 
 
 class HealthcareEnv(gym.Env):
-    def __init__(self, initial_budget = 10000, initial_healthcare = 50, initial_risk = 50, risk_increment_prob = 0.2, election_interval = 5):
+    def __init__(self, initial_budget = 1000, initial_healthcare = 50, initial_risk = 50, risk_increment_prob = 0.2, election_interval = 5):
         super(HealthcareEnv, self).__init__()
         """
         Initialize the environment with the initial values 
@@ -25,7 +25,7 @@ class HealthcareEnv(gym.Env):
         self.action_space = spaces.Discrete(3)
         # budget, healthcare level, health risk 
         self.observation_space = spaces.Dict({
-            "budget": spaces.Box(low=0, high=10000, shape=(1,), dtype=np.float64),
+            "budget": spaces.Box(low=0, high=1000, shape=(1,), dtype=np.float64),
             "health_level": spaces.Discrete(99),
             "risk_level": spaces.Discrete(99)
         })
@@ -44,9 +44,6 @@ class HealthcareEnv(gym.Env):
         '''
         Returns the available actions based on the current state
         '''
-        max_budget = self.observation_space.spaces['budget'].high[0]
-        assert self.initial_budget <= max_budget, 'Invalid state: Budget exceeds maximum limit'
-
         available_actions = []
         if self.initial_budget >= 2:
             # Can invest in healthcare
@@ -78,8 +75,8 @@ class HealthcareEnv(gym.Env):
                     penalty = -1000 * (self.initial_risk - self.initial_healthcare) # very large penalty
                     return penalty, True  # episode ends with large penalty due to pandemic
             else:
-                return self.initial_budget, False 
-            
+                return self.initial_budget, False
+
         if self.current_year % self.election_interval == 0:
             election_reward = 500 * (self.initial_healthcare - self.initial_risk)
             if election_reward < 0:
@@ -94,7 +91,7 @@ class HealthcareEnv(gym.Env):
         if action == 0: # invest in healthcare
             #self.do_nothing_count = 0
             if self.initial_budget >= 2:
-                self.initial_healthcare += 3
+                self.initial_healthcare += min(100, self.initial_healthcare + 3)
                 self.initial_budget -= 2
         elif action == 1: # invest in education & prevention
             #self.do_nothing_count = 0

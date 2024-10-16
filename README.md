@@ -6,4 +6,4 @@ _Will the agent maintain its job or be fired during the next elections?_
 ##### ENVIRONMENT
 ###### State: (budget, health level, risk level)
 
-[Here] (https://github.com/afflint/rlcoding/blob/main/2023-24/projects/rl-projects.pdf) you can find the project proposal!
+[Here](https://github.com/afflint/rlcoding/blob/main/2023-24/projects/rl-projects.pdf) you can find the project proposal!

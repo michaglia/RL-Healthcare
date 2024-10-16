@@ -26,8 +26,8 @@ class HealthcareEnv(gym.Env):
         # budget, healthcare level, health risk 
         self.observation_space = spaces.Dict({
             "budget": spaces.Box(low=0, high=1000, shape=(1,), dtype=np.float64),
-            "health_level": spaces.Discrete(99),
-            "risk_level": spaces.Discrete(99)
+            "health_level": spaces.Discrete(100),
+            "risk_level": spaces.Discrete(100)
         })
         #self.do_nothing_count = 0
         self.done = False
@@ -60,43 +60,33 @@ class HealthcareEnv(gym.Env):
     
     def reward(self):
         """
-        Calculates the reward based on the current state of the environment
+        Calculates the reward based on the current state of the environment.
+        Includes a job security reward every 5 years based on the health index
+        and quality of healthcare.
         """
-        pandemic_occurrence = False
-
-        # increase health_risk randomly by the increment
-        if random.random() < self.risk_increment_prob:
-            self.initial_risk += random.randint(1,3)
-            
-            if self.initial_risk > self.initial_healthcare:
-                pandemic_pr = (self.initial_risk - self.initial_healthcare) / self.initial_risk
-                if random.random() < pandemic_pr:
-                    pandemic_occurrence = True  # pandemic has occurred
-                    penalty = -1000 * (self.initial_risk - self.initial_healthcare) # very large penalty
-                    return penalty, True  # episode ends with large penalty due to pandemic
-            else:
-                return self.initial_budget, False
-
         if self.current_year % self.election_interval == 0:
-            election_reward = 500 * (self.initial_healthcare - self.initial_risk)
+            election_reward = self.initial_healthcare - self.initial_risk
             if election_reward < 0:
-                return election_reward, True # you lose the election, end simulation
+                return 0, True # you lose the election, end simulation
             else:
-                return election_reward, False
-        health_risk_reward = 1000 - 10 * self.initial_risk
-        return health_risk_reward, False
+                return 1, False
+            
+        population_happiness = 100 - 10 * self.initial_risk
+        return population_happiness, False
     
     def step(self, action):
         # Take actions
         if action == 0: # invest in healthcare
             #self.do_nothing_count = 0
             if self.initial_budget >= 2:
-                self.initial_healthcare += min(100, self.initial_healthcare + 3)
+                self.initial_healthcare = min(100, self.initial_healthcare + 3)
+                self.initial_risk = max(0, self.initial_risk - 3)  
                 self.initial_budget -= 2
         elif action == 1: # invest in education & prevention
             #self.do_nothing_count = 0
             if self.initial_budget >= 1:
                 self.initial_risk = max(0, self.initial_risk - 1)
+                self.initial_healthcare = min(100, self.initial_healthcare + 1)
                 self.initial_budget -= 1
         elif action == 2: # do nothing
             #self.do_nothing_count += 1
@@ -105,6 +95,19 @@ class HealthcareEnv(gym.Env):
             #if self.do_nothing_count >= 2:
                 #self.initial_budget = self.initial_budget - 3 
                 # Penalty applied for doing nothing twice in a row
+        risk_increase = 0
+        if self.initial_healthcare < 100 and random.random() < self.risk_increment_prob:
+            risk_increase = random.randint(1, 3)
+            self.initial_risk = min(100, self.initial_risk + risk_increase)
+            # proportional decrease based on risk level
+            self.initial_healthcare = max(0, self.initial_healthcare - risk_increase)
+            # Check for pandemic occurrence after health decrease
+        if self.initial_risk > self.initial_healthcare:
+            pandemic_pr = (self.initial_risk - self.initial_healthcare) / self.initial_risk
+            if random.random() < pandemic_pr:
+                pandemic_occurrence = True
+                penalty = -1000 * (self.initial_risk - self.initial_healthcare)  # Large penalty for pandemic
+                return self._get_obs(), penalty, True, False, {} # End episode due to pandemic
 
         reward, self.done = self.reward()
 

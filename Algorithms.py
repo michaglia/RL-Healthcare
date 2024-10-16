@@ -6,9 +6,9 @@ import random
 from collections import deque
 from tensorflow import keras
 from keras import models, Input
-from keras.models import Sequential
-from keras.layers import Dense
-from keras.optimizers import Adam
+from keras.models import Sequential # type: ignore
+from keras.layers import Dense # type: ignore
+from keras.optimizers import Adam # type: ignore
 
 
 class HealthQLearnVFA:

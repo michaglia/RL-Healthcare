@@ -4,6 +4,8 @@ This project aims to develop a reinforcement learning (RL) environment for manag
 
 _Will the agent maintain its job or be fired during the next elections?_
 
+[Here](https://github.com/afflint/rlcoding/blob/main/2023-24/projects/rl-projects.pdf) you can find the project proposal!
+
 #### ENVIRONMENT
 ##### State space: budget, health level, risk level
 ##### Action space: 
@@ -14,8 +16,6 @@ _Will the agent maintain its job or be fired during the next elections?_
 ###### 1. A reward for maintaining or improving the health level while managing risk.
 ###### 2. A penalty for negative outcomes such as low health levels or high risk levels.
 ###### 3. An election reward based on the difference between health level and risk level, affecting the agent's tenure.
-
-[Here](https://github.com/afflint/rlcoding/blob/main/2023-24/projects/rl-projects.pdf) you can find the project proposal!
 
 ### Contribution
 Contributions to enhance the project are welcome! Please feel free to submit a pull request or open an issue for discussion.
